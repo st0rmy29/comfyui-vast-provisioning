@@ -179,6 +179,7 @@ function provisioning_start() {
 
     echo "🎬 Downloading MiniMax H3 models (large files via hf)..."
     download_minimax_models || { echo "❌ Required model downloads failed; provisioning stopped."; return 1; }
+    download_civitai_lora || { echo "❌ Required Civitai LoRA download failed; provisioning stopped."; return 1; }
 
     echo "🔍 Downloading YOLO models..."
     mkdir -p "${COMFYUI_DIR}/models/ultralytics/bbox"
@@ -340,6 +341,62 @@ function monitor_progress() {
         echo "   ⏳ $name [${bar}${pad}] ${pct}% ($((cur / 1048576))/${exp_mb} MB)"
         sleep 20
     done
+}
+
+function download_civitai_lora() {
+    local choice="${MINIMAX_MODEL:-both}"
+    if [[ "$choice" == pikaflex ]]; then
+        echo "⏭️ Skipping Minimax H3 Unlocked V3 LoRA (MINIMAX_MODEL=pikaflex)"
+        return 0
+    fi
+    if [[ "$choice" != prism && "$choice" != both ]]; then
+        echo "❌ Invalid MINIMAX_MODEL: $choice"
+        return 1
+    fi
+    local name='Minimax_H3_Unlocked_V3.safetensors'
+    local expected='a423ceb3363ab5bf305d99236e6acc7fddab265896e7b4a3d85778396ebc4963'
+    local dir="${COMFYUI_DIR}/models/loras" dest tmp actual attempt
+    dest="$dir/$name"
+    mkdir -p "$dir" || return 1
+    if [ -f "$dest" ]; then
+        actual=$(sha256sum "$dest" | cut -d' ' -f1)
+        if [ "$actual" = "$expected" ]; then
+            echo "✅ $name already present and SHA-256 verified"
+            return 0
+        fi
+        echo "❌ Existing $name has an unexpected SHA-256; leaving it untouched"
+        return 1
+    fi
+    if [[ -z "${CIVITAI_TOKEN:-}" || ! "$CIVITAI_TOKEN" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+        echo "❌ Set a valid CIVITAI_TOKEN in the private Vast.ai template"
+        return 1
+    fi
+    tmp=$(mktemp "$dir/.civitai-lora.XXXXXXXX") || return 1
+    for attempt in 1 2 3; do
+        echo "📥 Downloading $name (attempt $attempt/3)"
+        if printf 'header = "Authorization: Bearer %s"\n' "$CIVITAI_TOKEN" | \
+            curl --config - --fail --silent --show-error --location --connect-timeout 30 --max-time 600 \
+            'https://civitai.com/api/download/models/3446226' --output "$tmp"; then
+            actual=$(sha256sum "$tmp" | cut -d' ' -f1)
+            if [ "$actual" = "$expected" ]; then
+                if [ -e "$dest" ]; then
+                    echo "❌ $name appeared during download; leaving it untouched"
+                    rm -f "$tmp"
+                    return 1
+                fi
+                mv "$tmp" "$dest" || { rm -f "$tmp"; return 1; }
+                echo "✅ $name downloaded and SHA-256 verified"
+                return 0
+            fi
+            echo "⚠️ $name SHA-256 mismatch (attempt $attempt/3)"
+        else
+            echo "⚠️ $name download failed (attempt $attempt/3)"
+        fi
+        [ "$attempt" -lt 3 ] && sleep $((attempt * 5))
+    done
+    rm -f "$tmp"
+    echo "❌ Failed to download and verify $name after 3 attempts"
+    return 1
 }
 
 function download_one_minimax_model() {
