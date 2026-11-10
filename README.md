@@ -16,7 +16,7 @@ Set `MINIMAX_MODEL` as a Vast.ai template environment variable before creating a
 
 Common components, such as the MiniMax H3 video/audio VAE, Qwen3-VL text encoder, Qwen3.5 prompt enhancer and associated nodes, are retained. An existing workflow may need its model loader adjusted to match the downloaded filename. Turbo beta7, Singularity ref2va v2, and Hybrid DMAD PDMD were removed from the original download list.
 
-For `prism` and `both`, the script also downloads `Minimax_H3_Unlocked_V3.safetensors` (Civitai model version 3446226) into `models/loras` and verifies its SHA-256. Set `CIVITAI_TOKEN` in the private Vast.ai template; never put its value into this public repository. The token is accessible to the template and instance environment, so it should be read-only and treated as exposed to code running there. The `pikaflex` mode does not download the LoRA. An existing file with a different hash is left untouched and causes a provisioning failure.
+For `prism`, `pikaflex`, and `both`, the script also downloads `Minimax_H3_Unlocked_V3.safetensors` (Civitai model version 3446226) into `models/loras` and verifies its SHA-256. Set `CIVITAI_TOKEN` in the private Vast.ai template; never put its value into this public repository. The token is accessible to the template and instance environment, so it should be read-only and treated as exposed to code running there. An existing file with a different hash is left untouched and causes a provisioning failure.
 
 ## Downloads
 

@@ -347,11 +347,7 @@ function monitor_progress() {
 
 function download_civitai_lora() {
     local choice="${MINIMAX_MODEL:-both}"
-    if [[ "$choice" == pikaflex ]]; then
-        echo "⏭️ Skipping Minimax H3 Unlocked V3 LoRA (MINIMAX_MODEL=pikaflex)"
-        return 0
-    fi
-    if [[ "$choice" != prism && "$choice" != both ]]; then
+    if [[ "$choice" != prism && "$choice" != both && "$choice" != pikaflex ]]; then
         echo "❌ Invalid MINIMAX_MODEL: $choice"
         return 1
     fi
