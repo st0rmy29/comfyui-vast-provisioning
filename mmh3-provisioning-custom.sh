@@ -178,7 +178,7 @@ function provisioning_start() {
         "${TEXT_ENCODERS[@]}"
 
     echo "🎬 Downloading MiniMax H3 models (large files via hf)..."
-    download_minimax_models
+    download_minimax_models || { echo "❌ Required model downloads failed; provisioning stopped."; return 1; }
 
     echo "🔍 Downloading YOLO models..."
     mkdir -p "${COMFYUI_DIR}/models/ultralytics/bbox"
@@ -342,61 +342,70 @@ function monitor_progress() {
     done
 }
 
+function download_one_minimax_model() {
+    local entry="$1" base_dir="$2" hf_cmd="$3"
+    local subdir name url min_size dest size repo_id repo_path tmp_dir downloaded_path attempt
+    IFS='|' read -r subdir name url min_size <<< "$entry"
+    dest="$base_dir/$subdir/$name"
+    if [ -f "$dest" ]; then
+        size=$(stat -L -c%s "$dest" 2>/dev/null || echo 0)
+        if [ "$size" -ge "$min_size" ]; then
+            echo "✅ $name already present ($size bytes), skipping"
+            return 0
+        fi
+    fi
+    repo_id=$(echo "$url" | awk -F/ '{print $4"/"$5}')
+    repo_path=$(echo "$url" | sed -E 's#https?://[^/]+/[^/]+/[^/]+/resolve/main/(.+)#\1#')
+    tmp_dir="$base_dir/.tmp_download_${name//\//_}"
+    mkdir -p "$tmp_dir" "$(dirname "$dest")" || return 1
+    export HF_HUB_ENABLE_HF_TRANSFER=1 HF_XET_HIGH_PERFORMANCE=1
+    for attempt in 1 2 3; do
+        echo "📥 $name: attempt $attempt/3"
+        if "$hf_cmd" download "$repo_id" "$repo_path" --local-dir "$tmp_dir"; then
+            downloaded_path="$tmp_dir/$repo_path"
+            size=$(stat -L -c%s "$downloaded_path" 2>/dev/null || echo 0)
+            if [ "$size" -ge "$min_size" ] && mv -f "$downloaded_path" "$dest"; then
+                rm -rf "$tmp_dir"
+                echo "✅ $name downloaded successfully ($size bytes)"
+                return 0
+            fi
+            echo "⚠️ $name missing or too small ($size / $min_size bytes)"
+        fi
+        [ "$attempt" -lt 3 ] && sleep $((attempt * 5))
+    done
+    echo "❌ Failed to download $name after 3 attempts"
+    return 1
+}
+
 function download_minimax_models() {
     local base_dir="${COMFYUI_DIR}/models"
     mkdir -p "$base_dir"/{vae,vae_approx,diffusion_models,text_encoders,clip_projections,loras,LLM/GGUF}
 
-    local hf_cmd="hf"
+    local hf_cmd="hf" choice="${MINIMAX_MODEL:-both}" workers="${MODEL_DOWNLOAD_WORKERS:-2}"
+    local entry name pid failed=0 batch_count=0
+    local -a pids=()
+    case "$choice" in both|prism|pikaflex) ;; *) echo "❌ MINIMAX_MODEL must be both, prism or pikaflex (got: $choice)"; return 1 ;; esac
+    case "$workers" in 1|2|3|4) ;; *) echo "❌ MODEL_DOWNLOAD_WORKERS must be 1, 2, 3 or 4"; return 1 ;; esac
     command -v hf >/dev/null 2>&1 || hf_cmd="huggingface-cli"
-
+    echo "🎛️ MINIMAX_MODEL=$choice; MODEL_DOWNLOAD_WORKERS=$workers"
     for entry in "${MINIMAX_MODELS[@]}"; do
-        IFS='|' read -r subdir name url min_size <<< "$entry"
-        local dest="$base_dir/$subdir/$name"
-
-        if [ -f "$dest" ] || [ -L "$dest" ]; then
-            local size
-            size=$(stat -L -c%s "$dest" 2>/dev/null || stat -L -f%z "$dest" 2>/dev/null || echo 0)
-            if [ "$size" -ge "$min_size" ]; then
-                echo "✅ $name already present ($size bytes >= $min_size), skipping"
-                continue
-            fi
+        IFS='|' read -r _ name _ <<< "$entry"
+        if [[ "$name" == PRISM_DMAD_PDMD_int8.safetensors && "$choice" == pikaflex ]] ||
+           [[ "$name" == 10Eros_Max_SingularityV2_PRISM2_PikaFlex_0.85_int8HQ.safetensors && "$choice" == prism ]]; then
+            echo "⏭️ Skipping $name (MINIMAX_MODEL=$choice)"
+            continue
         fi
-
-        echo "📥 Downloading $name ..."
-        local repo_id repo_path tmp_dir
-        repo_id=$(echo "$url" | awk -F/ '{print $4"/"$5}')
-        repo_path=$(echo "$url" | sed -E 's#https?://[^/]+/[^/]+/[^/]+/resolve/main/(.+)#\1#')
-        tmp_dir="$base_dir/.tmp_download_${name//\//_}"
-        rm -rf "$tmp_dir"
-        mkdir -p "$tmp_dir" "$(dirname "$dest")"
-
-        export HF_HUB_ENABLE_HF_TRANSFER=1
-        export HF_XET_HIGH_PERFORMANCE=1
-        local resume_flag=""
-        [ "$hf_cmd" = "huggingface-cli" ] && resume_flag="--resume-download"
-
-        monitor_progress "$tmp_dir" "$min_size" "$name" &
-        local mon_pid=$!
-
-        if $hf_cmd download "$repo_id" "$repo_path" --local-dir "$tmp_dir" $resume_flag; then
-            kill "$mon_pid" 2>/dev/null; wait "$mon_pid" 2>/dev/null
-            local downloaded_path="$tmp_dir/$repo_path"
-            if [ -f "$downloaded_path" ] || [ -L "$downloaded_path" ]; then
-                mv -f "$downloaded_path" "$dest"
-                rm -rf "$tmp_dir"
-                local size
-                size=$(stat -L -c%s "$dest" 2>/dev/null || stat -L -f%z "$dest" 2>/dev/null || echo 0)
-                echo "✅ $name downloaded successfully ($size bytes)"
-            else
-                echo "⚠️  $name not found after download"
-                rm -rf "$tmp_dir"
-            fi
-        else
-            kill "$mon_pid" 2>/dev/null; wait "$mon_pid" 2>/dev/null
-            echo "❌ $hf_cmd failed for $name"
-            rm -rf "$tmp_dir"
+        download_one_minimax_model "$entry" "$base_dir" "$hf_cmd" &
+        pids+=("$!")
+        ((batch_count+=1))
+        if [ "$batch_count" -ge "$workers" ]; then
+            for pid in "${pids[@]}"; do wait "$pid" || failed=1; done
+            pids=(); batch_count=0
         fi
     done
+    for pid in "${pids[@]}"; do wait "$pid" || failed=1; done
+    if [ "$failed" -ne 0 ]; then echo "❌ Model validation failed; check download errors above"; return 1; fi
+    echo "✅ All selected models are present and meet minimum size checks"
 }
 
 if [[ ! -f /.noprovisioning ]]; then
