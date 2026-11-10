@@ -4,6 +4,8 @@ Personal copy of [ComfyUI-Garage's provisioning script](https://github.com/huchu
 
 ## Model selection
 
+The startup script installs `MiniMaxH3-PikaFlex085-R2VA-8step-beta57.json` into ComfyUI's workflow folder. This public copy retains the user's model and sampling settings, with private prompt, reference filenames and preview data removed. Select references and enter a prompt before use. The workflow needs the PikaFlex model (`MINIMAX_MODEL=both` or `pikaflex`); choosing `prism` does not download it.
+
 Set `MINIMAX_MODEL` as a Vast.ai template environment variable before creating an instance:
 
 | Value | Diffusion models downloaded |

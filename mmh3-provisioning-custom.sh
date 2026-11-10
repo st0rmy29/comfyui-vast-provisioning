@@ -39,6 +39,7 @@ NODES=(
 )
 
 WORKFLOWS=(
+    "https://raw.githubusercontent.com/st0rmy29/comfyui-vast-provisioning/main/workflows/MiniMaxH3-PikaFlex085-R2VA-8step-beta57.json"
     "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/minimax/MiniMaxH3-Turbo-I2VA-Qwen3.5.json"
     "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/minimax/MiniMaxH3-Turbo-FL2VA-Qwen3.5.json"
     "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/minimax/MiniMaxH3-Turbo-T2VA-Qwen3.5.json"
