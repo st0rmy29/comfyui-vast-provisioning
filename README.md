@@ -18,6 +18,8 @@ For `prism` and `both`, the script also downloads `Minimax_H3_Unlocked_V3.safete
 
 ## Downloads
 
+RES4LYF is installed as a custom node; it registers the `beta57` scheduler (alpha 0.5, beta 0.7) and additional samplers. ComfyUI must restart after installation before the scheduler appears in standard scheduler selectors. The existing standalone `BetaSamplingScheduler` configuration with the same alpha and beta already provides the equivalent schedule without RES4LYF.
+
 `MODEL_DOWNLOAD_WORKERS` sets the maximum number of simultaneous model downloads; allowed values are 1–4 and the default is 2. Parallel downloads can compete for network or disk resources. Each file has up to three attempts. Existing files meeting the configured minimum byte size are reused; newly downloaded files are checked against the same minimum size. These size checks do not establish file integrity; use checksums where needed.
 
 If a selected model fails all attempts, the script returns a failure so the provisioner can report/retry it. Application behavior after a failed provisioning run depends on the Vast.ai image and provisioner settings; check logs instead of assuming readiness. Model selection only changes model downloads in future provisioning runs; it does not remove files or change existing workflows.

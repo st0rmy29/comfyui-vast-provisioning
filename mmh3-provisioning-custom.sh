@@ -17,6 +17,7 @@ PIP_PACKAGES=(
 )
 
 NODES=(
+    "https://github.com/ClownsharkBatwing/RES4LYF"
     "https://github.com/huchukato/ComfyUI-TagForge"
     "https://github.com/huchukato/ComfyUI-QwenVL-Mod"
     "https://github.com/huchukato/ComfyUI-CharSheet"
