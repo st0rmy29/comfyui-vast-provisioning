@@ -4,17 +4,17 @@ Personal copy of [ComfyUI-Garage's provisioning script](https://github.com/huchu
 
 ## Model selection
 
-The startup script installs `MiniMaxH3-PikaFlex085-R2VA-8step-beta57.json` into ComfyUI's workflow folder. This public copy retains the user's model and sampling settings, with private prompt, reference filenames and preview data removed. Select references and enter a prompt before use. The workflow needs the PikaFlex model (`MINIMAX_MODEL=both` or `pikaflex`); choosing `prism` does not download it.
+The startup script installs `MiniMaxH3-PikaFlex085-R2VA-beta57-Qwen38-27B-Fable709-INT8.json` into ComfyUI's workflow folder. This public copy retains the user's model and sampling settings, with private prompt, reference filenames and preview data removed. The current public workflow retains the video settings (10 seconds, Euler/beta57, 8 steps, 12/3 shifts) while removing private prompts, reference filenames and generated text. Select references and enter a prompt before use. The workflow needs the PikaFlex model (`MINIMAX_MODEL=both` or `pikaflex`); choosing `prism` does not download it.
 
 Set `MINIMAX_MODEL` as a Vast.ai template environment variable before creating an instance:
 
 | Value | Diffusion models downloaded |
 | --- | --- |
-| `both` (default) | PRISM DMAD PDMD and PRISM2 PikaFlex 0.85 |
+| `both` | PRISM DMAD PDMD and PRISM2 PikaFlex 0.85 |
 | `prism` | PRISM DMAD PDMD only |
-| `pikaflex` | PRISM2 PikaFlex 0.85 only |
+| `pikaflex` (default) | PRISM2 PikaFlex 0.85 only |
 
-Common components, such as the MiniMax H3 video/audio VAE, Qwen3-VL text encoder, Qwen3.5 prompt enhancer and associated nodes, are retained. An existing workflow may need its model loader adjusted to match the downloaded filename. Turbo beta7, Singularity ref2va v2, and Hybrid DMAD PDMD were removed from the original download list.
+The private Vast.ai template currently sets `MINIMAX_MODEL=pikaflex`; this remains compatible. `prism` does not provide the PikaFlex model required by the included workflow. Common components, such as the MiniMax H3 video/audio VAE, Qwen3-VL-32B Ultra Heretic INT8 ConvRot text encoder, Qwen3.8-27B Fable 709 Q6_K prompt enhancer and its matching vision projector and associated nodes, are retained. An existing workflow may need its model loader adjusted to match the downloaded filename. Turbo beta7, Singularity ref2va v2, and Hybrid DMAD PDMD were removed from the original download list.
 
 For `prism`, `pikaflex`, and `both`, the script also downloads `Minimax_H3_Unlocked_V3.safetensors` (Civitai model version 3446226) into `models/loras` and verifies its SHA-256. Set `CIVITAI_TOKEN` in the private Vast.ai template; never put its value into this public repository. The token is accessible to the template and instance environment, so it should be read-only and treated as exposed to code running there. An existing file with a different hash is left untouched and causes a provisioning failure.
 
@@ -29,3 +29,9 @@ If a selected model fails all attempts, the script returns a failure so the prov
 ## Maintenance
 
 The template uses `vastai/comfy:@vastai-automatic-tag`: Vast.ai selects an image for the host, but this does not guarantee the newest release or CUDA 13.2. The provisioning script currently installs CUDA 13 TensorRT packages and an x86_64 llama-cpp-python wheel; validate compatibility when changing GPU, CPU architecture, or image. First boot and a representative generation should be tested after updates.
+
+## Workflow and chat
+
+The installation downloads only the selected personal workflow. QwenVL-Mod also maintains a catalog of other models; entries in its selectors do not imply those files are installed, and selecting another model can trigger a download. Select the Qwen3.8-27B Fable 709 Q6_K GGUF in the chat settings separately. The chat may still default to its upstream model. The Qwen 3.8 files reside in their model-specific directory so its projector cannot be confused with those of other models.
+
+The prebuilt TensorRT engines are hardware and version dependent. Their presence does not establish compatibility on a different GPU or image. The included workflow refers to an optional turbo LoRA that is disabled and is not downloaded.

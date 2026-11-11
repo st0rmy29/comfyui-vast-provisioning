@@ -39,17 +39,7 @@ NODES=(
 )
 
 WORKFLOWS=(
-    "https://raw.githubusercontent.com/st0rmy29/comfyui-vast-provisioning/main/workflows/MiniMaxH3-PikaFlex085-R2VA-8step-beta57.json"
-    "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/minimax/MiniMaxH3-Turbo-I2VA-Qwen3.5.json"
-    "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/minimax/MiniMaxH3-Turbo-FL2VA-Qwen3.5.json"
-    "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/minimax/MiniMaxH3-Turbo-T2VA-Qwen3.5.json"
-    "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/minimax/MiniMaxH3-Turbo-R2VA-Qwen3.5.json"
-    "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/minimax/MiniMaxH3-Singularity-R2VA-Qwen3.5.json"
-    "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/minimax/MiniMaxH3-Director-Native-Qwen3.5.json"
-    "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/utils/2in1-LoRaStack-Merge.json"
-    "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/utils/Pony-XL-Outpaint.json"
-    "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/utils/RIFE-Upscale-TensorRT.json"
-    "https://github.com/huchukato/ComfyUI-Garage/raw/master/workflows/pony/PimpMyPony-Wildcards-HiResFix-FaceDet.json"
+    "https://raw.githubusercontent.com/st0rmy29/comfyui-vast-provisioning/main/workflows/MiniMaxH3-PikaFlex085-R2VA-beta57-Qwen38-27B-Fable709-INT8.json"
 )
 
 CHECKPOINT_MODELS=(
@@ -65,7 +55,7 @@ VAE_MODELS=(
 )
 
 ESRGAN_MODELS=(
-    "https://huggingface.co/huchukato/garage/resolve/main/upscale_models/4xUltrasharp_4xUltrasharpV10.pth"
+
 )
 
 TEXT_ENCODERS=(
@@ -80,18 +70,18 @@ MINIMAX_MODELS=(
     "vae|minimax_h3_audio_vae_fp32.safetensors|https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors|600000000"
     # ── Tiny H3 VAE for fast previews (Kijai TAE) → models/vae_approx ──
     "vae_approx|taeh3.safetensors|https://huggingface.co/Kijai/MiniMax-H3-TAE/resolve/main/vae_approx/taeh3.safetensors|9000000"
-    # ── Pure INT8 ConvRot DiT (Comfy-Org official) — better quality than NVFP4 hybrid ──
+    # ── Optional PRISM DMAD and selected PikaFlex diffusion models ──
     "diffusion_models|PRISM_DMAD_PDMD_int8.safetensors|https://huggingface.co/OliviaRossi/Minimax-h3_Singularity-x-10Eros-Max_PRISM/resolve/main/PRISM_DMAD_PDMD_int8.safetensors|20000000000"
     "diffusion_models|10Eros_Max_SingularityV2_PRISM2_PikaFlex_0.85_int8HQ.safetensors|https://huggingface.co/OliviaRossi/Minimax-h3_Singularity-x-10Eros-Max_PRISM/resolve/main/10Eros_Max_SingularityV2_PRISM2_PikaFlex_0.85_int8HQ.safetensors|20197393008"
     # ── Full H3 conditioning TE: Ultra Heretic INT8 ConvRot (uncensored, ethanfel) ──
-    "text_encoders|qwen3vl_32b_heretic_minimax_h3_nvfp4.safetensors|https://huggingface.co/Momoking/Qwen3-VL-32B-Heretic-MiniMax-H3-NVFP4/resolve/main/qwen3vl_32b_heretic_minimax_h3_nvfp4.safetensors|15000000000"
+    "text_encoders|qwen3vl_32b_h3_ultra_uncensored_heretic_int8_convrot.safetensors|https://huggingface.co/ethanfel/Qwen3-VL-32B-Ultra-Heretic-H3-ComfyUI-INT8-ConvRot/resolve/main/qwen3vl_32b_h3_ultra_uncensored_heretic_int8_convrot.safetensors|26363476151"
     # ── lightx2v Turbo LoRA 8-step 768p (Apache-2.0, trained at 1344×768) — no custom node needed ──
     # ── fal Realism People LoRA (trigger: r34l1sm) ──
     # ── akatz Character-Swap LoRA — ref2v character swap ──
     # ── TenStrip combined turbo LoRA (4.4GB) — the exact delta fused into the TURBO checkpoint; use with 10Eros non-turbo ──
-    # ── QwenVL-Mod enhancer LLM: Defiant-Fable NEO-MAX Q6_K + mmproj (Analyze built-in) ──
-    "LLM/GGUF|Qwen3.5-9B-The-Defiant-Fable-Uncnr-Heretic-NEO-MAX-Q6_K.gguf|https://huggingface.co/DavidAU/Qwen3.5-9B-The-Defiant-Fable-Uncensored-Heretic-NEO-IMATRIX-MAX-MTP-GGUF/resolve/main/Qwen3.5-9B-The-Defiant-Fable-Uncnr-Heretic-NEO-MAX-Q6_K.gguf|8500000000"
-    "LLM/GGUF|mmproj-BF16.gguf|https://huggingface.co/DavidAU/Qwen3.5-9B-The-Defiant-Fable-Uncensored-Heretic-NEO-IMATRIX-MAX-MTP-GGUF/resolve/main/mmproj-BF16.gguf|900000000"
+    # ── Qwen 3.8 Fable 709 Q6_K and its matching vision projector ──
+    "LLM/GGUF/DavidAU/Qwen3.8-27B-TWIN-TURBO-Fable-Cold-Fusion-709-ULTRA-HERETIC-Uncensored-NM-DAU-NEO-MTP-GGUF|Qwen3.8-27B-TTURBO-Fable-C-Fusion-709-U-Httic-Uncen-NM-DAU-NEO-MAX-Q6_K.gguf|https://huggingface.co/DavidAU/Qwen3.8-27B-TWIN-TURBO-Fable-Cold-Fusion-709-ULTRA-HERETIC-Uncensored-NM-DAU-NEO-MTP-GGUF/resolve/main/Qwen3.8-27B-TTURBO-Fable-C-Fusion-709-U-Httic-Uncen-NM-DAU-NEO-MAX-Q6_K.gguf|23582390976"
+    "LLM/GGUF/DavidAU/Qwen3.8-27B-TWIN-TURBO-Fable-Cold-Fusion-709-ULTRA-HERETIC-Uncensored-NM-DAU-NEO-MTP-GGUF|mmproj-BF16.gguf|https://huggingface.co/DavidAU/Qwen3.8-27B-TWIN-TURBO-Fable-Cold-Fusion-709-ULTRA-HERETIC-Uncensored-NM-DAU-NEO-MTP-GGUF/resolve/main/mmproj-BF16.gguf|931145952"
     # ── Prebuilt TensorRT engines (RTX PRO 6000, TRT 10.15.1.29) — skips ~1min compile at first use ──
     "tensorrt/rife|rife425_ensemble_False_scale_1_sim_fp16_large_1x3x720x720_1x3x1440x1440_1x3x1920x1920_10.15.1.29.trt|https://huggingface.co/huchukato/garage/resolve/main/tensorrt/rife/rife425_ensemble_False_scale_1_sim_fp16_large_1x3x720x720_1x3x1440x1440_1x3x1920x1920_10.15.1.29.trt|40000000"
     "tensorrt/upscaler|2xLexicaRRDBNet_fp16_1x3x256x256_2x3x512x512_2x3x2048x2048_10.15.1.29.trt|https://huggingface.co/huchukato/garage/resolve/main/tensorrt/upscaler/2xLexicaRRDBNet_fp16_1x3x256x256_2x3x512x512_2x3x2048x2048_10.15.1.29.trt|30000000"
@@ -99,11 +89,11 @@ MINIMAX_MODELS=(
 
 
 YOLO_MODELS=(
-    "https://huggingface.co/huchukato/garage/resolve/main/ultralytics/bbox/face_yolov8m.pt"
+
 )
 
 SAM_MODELS=(
-    "https://huggingface.co/huchukato/garage/resolve/main/sams/sam_vit_b_01ec64.pth"
+
 )
 
 ### DO NOT EDIT BELOW HERE UNLESS YOU KNOW WHAT YOU ARE DOING ###
@@ -346,7 +336,7 @@ function monitor_progress() {
 }
 
 function download_civitai_lora() {
-    local choice="${MINIMAX_MODEL:-both}"
+    local choice="${MINIMAX_MODEL:-pikaflex}"
     if [[ "$choice" != prism && "$choice" != both && "$choice" != pikaflex ]]; then
         echo "❌ Invalid MINIMAX_MODEL: $choice"
         return 1
@@ -436,7 +426,7 @@ function download_minimax_models() {
     local base_dir="${COMFYUI_DIR}/models"
     mkdir -p "$base_dir"/{vae,vae_approx,diffusion_models,text_encoders,clip_projections,loras,LLM/GGUF}
 
-    local hf_cmd="hf" choice="${MINIMAX_MODEL:-both}" workers="${MODEL_DOWNLOAD_WORKERS:-2}"
+    local hf_cmd="hf" choice="${MINIMAX_MODEL:-pikaflex}" workers="${MODEL_DOWNLOAD_WORKERS:-2}"
     local entry name pid failed=0 batch_count=0
     local -a pids=()
     case "$choice" in both|prism|pikaflex) ;; *) echo "❌ MINIMAX_MODEL must be both, prism or pikaflex (got: $choice)"; return 1 ;; esac
