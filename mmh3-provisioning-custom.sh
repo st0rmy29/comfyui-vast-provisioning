@@ -104,6 +104,14 @@ function provisioning_start() {
     provisioning_print_header
     echo "🚀 Starting provisioning process..."
 
+    if [[ "${NOCT_PHOTO_ENABLED:-1}" != "0" && "${NOCT_PHOTO_ENABLED:-1}" != "false" && "${NOCT_PHOTO_ENABLED:-1}" != "FALSE" ]]; then
+        if ! grep -q 'class TextEncodeQwenImage21' "${COMFYUI_DIR}/comfy_extras/nodes_qwen.py" 2>/dev/null || \
+           ! grep -q 'class ModelAttentionBackend' "${COMFYUI_DIR}/comfy_extras/nodes_model_advanced.py" 2>/dev/null; then
+            echo "❌ This ComfyUI image lacks the Qwen Image 2.1 or PyTorch attention nodes required by the photo workflows. Choose a compatible image or set NOCT_PHOTO_ENABLED=0."
+            return 1
+        fi
+    fi
+
     echo "📦 Installing APT packages..."
     provisioning_get_apt_packages
 
