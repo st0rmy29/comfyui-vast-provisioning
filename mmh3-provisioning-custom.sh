@@ -117,7 +117,10 @@ function provisioning_start() {
         rel="${url#*workflows/}"
         subdir=$(dirname "$rel")
         mkdir -p "$WF_BASE/$subdir"
-        provisioning_download "$url" "$WF_BASE/$subdir"
+        if ! provisioning_download "$url" "$WF_BASE/$subdir"; then
+            echo "❌ Failed to download workflow: $rel"
+            return 1
+        fi
     done
 
     echo "✅ Workflows downloaded to: $WF_BASE"
