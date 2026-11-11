@@ -20,6 +20,8 @@ For `prism`, `pikaflex`, and `both`, the script also downloads `Minimax_H3_Unloc
 
 ## Downloads
 
+The private template also installs the Noct Q V4 BF16 photo model, the official Qwen3-VL 8B BF16 and INT8 ConvRot encoders, the Qwen Image 2.1 VAE, and optional BFS Head and Body LoRAs. These add approximately 42 GB of downloads and disk use; the Qwen Research License applies. The Noct Q BF16 file is retrieved from Civitai using `CIVITAI_TOKEN`; other photo assets come from Hugging Face. Every photo asset is checked against its expected size and SHA-256. Existing files with different hashes are never overwritten. Transfers resume after an interruption, and credentials are not forwarded to a different hostname on redirects. Set `NOCT_PHOTO_ENABLED=0` to skip the photo model downloads.
+
 RES4LYF is installed as a custom node; it registers the `beta57` scheduler (alpha 0.5, beta 0.7) and additional samplers. ComfyUI must restart after installation before the scheduler appears in standard scheduler selectors. The existing standalone `BetaSamplingScheduler` configuration with the same alpha and beta already provides the equivalent schedule without RES4LYF.
 
 `MODEL_DOWNLOAD_WORKERS` sets the maximum number of simultaneous model downloads; allowed values are 1–4 and the default is 2. Parallel downloads can compete for network or disk resources. Each file has up to three attempts. Existing files meeting the configured minimum byte size are reused; newly downloaded files are checked against the same minimum size. These size checks do not establish file integrity; use checksums where needed.
@@ -32,6 +34,8 @@ The template uses `vastai/comfy:@vastai-automatic-tag`: Vast.ai selects an image
 
 ## Workflow and chat
 
-The installation downloads only the selected personal workflow. QwenVL-Mod also maintains a catalog of other models; entries in its selectors do not imply those files are installed, and selecting another model can trigger a download. Select the Qwen3.8-27B Fable 709 Q6_K GGUF in the chat settings separately. The chat may still default to its upstream model. The Qwen 3.8 files reside in their model-specific directory so its projector cannot be confused with those of other models.
+The installation downloads the selected video workflow and two Noct Q three-reference photo workflows. `NoctQ_V4_3ref_photo.json` makes the initial image; `NoctQ_V4_3ref_photo_detail.json` also adds the author's optional 1.3× detail pass. Supply three reference images and edit the neutral placeholder prompt before use. Both photo workflows use BF16 by default; the INT8 text encoder is available in the loader. They contain no personal reference filenames or prompts.
+
+QwenVL-Mod also maintains a catalog of other models; entries in its selectors do not imply those files are installed, and selecting another model can trigger a download. Select the Qwen3.8-27B Fable 709 Q6_K GGUF in the chat settings separately. The chat may still default to its upstream model. The Qwen 3.8 files reside in their model-specific directory so its projector cannot be confused with those of other models.
 
 The prebuilt TensorRT engines are hardware and version dependent. Their presence does not establish compatibility on a different GPU or image. The included workflow refers to an optional turbo LoRA that is disabled and is not downloaded.
