@@ -40,8 +40,6 @@ NODES=(
 
 WORKFLOWS=(
     "https://raw.githubusercontent.com/st0rmy29/comfyui-vast-provisioning/main/workflows/MiniMaxH3-PikaFlex085-R2VA-beta57-Qwen38-27B-Fable709-INT8.json"
-    "https://raw.githubusercontent.com/st0rmy29/comfyui-vast-provisioning/main/workflows/NoctQ_V4_3ref_photo.json"
-    "https://raw.githubusercontent.com/st0rmy29/comfyui-vast-provisioning/main/workflows/NoctQ_V4_3ref_photo_detail.json"
 )
 
 CHECKPOINT_MODELS=(
@@ -103,14 +101,6 @@ SAM_MODELS=(
 function provisioning_start() {
     provisioning_print_header
     echo "🚀 Starting provisioning process..."
-
-    if [[ "${NOCT_PHOTO_ENABLED:-1}" != "0" && "${NOCT_PHOTO_ENABLED:-1}" != "false" && "${NOCT_PHOTO_ENABLED:-1}" != "FALSE" ]]; then
-        if ! grep -q 'class TextEncodeQwenImage21' "${COMFYUI_DIR}/comfy_extras/nodes_qwen.py" 2>/dev/null || \
-           ! grep -q 'class ModelAttentionBackend' "${COMFYUI_DIR}/comfy_extras/nodes_model_advanced.py" 2>/dev/null; then
-            echo "❌ This ComfyUI image lacks the Qwen Image 2.1 or PyTorch attention nodes required by the photo workflows. Choose a compatible image or set NOCT_PHOTO_ENABLED=0."
-            return 1
-        fi
-    fi
 
     echo "📦 Installing APT packages..."
     provisioning_get_apt_packages
@@ -185,7 +175,6 @@ function provisioning_start() {
     echo "🎬 Downloading MiniMax H3 models (large files via hf)..."
     download_minimax_models || { echo "❌ Required model downloads failed; provisioning stopped."; return 1; }
     download_civitai_lora || { echo "❌ Required Civitai LoRA download failed; provisioning stopped."; return 1; }
-    download_noct_photo_models || { echo "❌ Noct Q photo model downloads failed; provisioning stopped."; return 1; }
 
     echo "🔍 Downloading YOLO models..."
     mkdir -p "${COMFYUI_DIR}/models/ultralytics/bbox"
@@ -196,26 +185,6 @@ function provisioning_start() {
     provisioning_get_files         "${COMFYUI_DIR}/models/sams"         "${SAM_MODELS[@]}"
         
     provisioning_print_end
-}
-
-function download_noct_photo_models() {
-    case "${NOCT_PHOTO_ENABLED:-1}" in
-        0|false|FALSE) echo "⏭️ Noct Q photo model downloads disabled"; return 0 ;;
-        1|true|TRUE) ;;
-        *) echo "❌ NOCT_PHOTO_ENABLED must be 0 or 1"; return 1 ;;
-    esac
-    local script_file
-    script_file=$(mktemp /tmp/noct-photo-setup.XXXXXXXX.py) || return 1
-    if ! curl --fail --silent --show-error --location --retry 3 \
-        'https://raw.githubusercontent.com/st0rmy29/comfyui-vast-provisioning/main/scripts/noct_download.py' \
-        --output "$script_file"; then
-        rm -f -- "$script_file"
-        return 1
-    fi
-    python3 "$script_file"
-    local result=$?
-    rm -f -- "$script_file"
-    return "$result"
 }
 
 function provisioning_get_apt_packages() {
